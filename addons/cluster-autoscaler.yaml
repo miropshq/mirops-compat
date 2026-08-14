@@ -1,0 +1,30 @@
+name: cluster-autoscaler
+displayName: Cluster Autoscaler
+source: https://github.com/kubernetes/autoscaler
+lastVerified: "2026-06"
+# The cluster-autoscaler minor version matches the Kubernetes minor version 1:1.
+rules:
+  - addonRange: ">=1.24.0 <1.25.0"
+    k8sRange: ">=1.24.0 <1.25.0"
+  - addonRange: ">=1.25.0 <1.26.0"
+    k8sRange: ">=1.25.0 <1.26.0"
+  - addonRange: ">=1.26.0 <1.27.0"
+    k8sRange: ">=1.26.0 <1.27.0"
+  - addonRange: ">=1.27.0 <1.28.0"
+    k8sRange: ">=1.27.0 <1.28.0"
+  - addonRange: ">=1.28.0 <1.29.0"
+    k8sRange: ">=1.28.0 <1.29.0"
+  - addonRange: ">=1.29.0 <1.30.0"
+    k8sRange: ">=1.29.0 <1.30.0"
+  - addonRange: ">=1.30.0 <1.31.0"
+    k8sRange: ">=1.30.0 <1.31.0"
+  - addonRange: ">=1.31.0 <1.32.0"
+    k8sRange: ">=1.31.0 <1.32.0"
+  - addonRange: ">=1.32.0 <1.33.0"
+    k8sRange: ">=1.32.0 <1.33.0"
+  - addonRange: ">=1.33.0 <1.34.0"
+    k8sRange: ">=1.33.0 <1.34.0"
+  - addonRange: ">=1.34.0 <1.35.0"
+    k8sRange: ">=1.34.0 <1.35.0"
+  - addonRange: ">=1.35.0 <1.36.0"
+    k8sRange: ">=1.35.0 <1.36.0"

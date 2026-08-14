@@ -1,0 +1,36 @@
+# Kubernetes deprecated / removed APIs — the version each API is removed in.
+#
+# GENERATED, not hand-curated. This dataset is derived from the upstream Kubernetes deprecation
+# guide (https://kubernetes.io/docs/reference/using-api/deprecation-guide/); a future
+# scripts/sync-deprecated-apis.sh will regenerate it. Do not edit rows by hand — fix the generator.
+#
+# Shape: each entry is a group/version/kind and the Kubernetes version that removed it.
+apis:
+  - group: extensions
+    version: v1beta1
+    kind: Ingress
+    removedIn: "1.22"
+  - group: networking.k8s.io
+    version: v1beta1
+    kind: Ingress
+    removedIn: "1.22"
+  - group: batch
+    version: v1beta1
+    kind: CronJob
+    removedIn: "1.25"
+  - group: policy
+    version: v1beta1
+    kind: PodDisruptionBudget
+    removedIn: "1.25"
+  - group: policy
+    version: v1beta1
+    kind: PodSecurityPolicy
+    removedIn: "1.25"
+  - group: autoscaling
+    version: v2beta2
+    kind: HorizontalPodAutoscaler
+    removedIn: "1.26"
+  - group: flowcontrol.apiserver.k8s.io
+    version: v1beta2
+    kind: FlowSchema
+    removedIn: "1.29"

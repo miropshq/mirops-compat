@@ -1,0 +1,17 @@
+name: cilium
+displayName: Cilium
+source: https://docs.cilium.io/en/stable/network/kubernetes/requirements/
+lastVerified: "2026-06"
+# 1.19 verified (1.31–1.34); older rows are best-effort (~5 minors per release).
+rules:
+  - addonRange: ">=1.16.0 <1.17.0"
+    k8sRange: ">=1.26.0 <=1.31.0"
+    bestEffort: true
+  - addonRange: ">=1.17.0 <1.18.0"
+    k8sRange: ">=1.28.0 <=1.32.0"
+    bestEffort: true
+  - addonRange: ">=1.18.0 <1.19.0"
+    k8sRange: ">=1.30.0 <=1.33.0"
+    bestEffort: true
+  - addonRange: ">=1.19.0"
+    k8sRange: ">=1.31.0 <=1.34.0"

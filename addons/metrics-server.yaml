@@ -1,0 +1,12 @@
+name: metrics-server
+displayName: metrics-server
+source: https://github.com/kubernetes-sigs/metrics-server
+lastVerified: "2026-06"
+# Source gives lower bounds (e.g. "1.31+"); upper bound capped at 1.35 (forward-compatible).
+rules:
+  - addonRange: ">=0.6.0 <0.7.0"
+    k8sRange: ">=1.25.0 <=1.35.0"
+  - addonRange: ">=0.7.0 <0.8.0"
+    k8sRange: ">=1.27.0 <=1.35.0"
+  - addonRange: ">=0.8.0"
+    k8sRange: ">=1.31.0 <=1.35.0"

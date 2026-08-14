@@ -1,0 +1,83 @@
+name: Release OCI matrix compatibility for Mirops
+
+on:
+  pull_request:
+  push:
+    branches: [development]
+
+# Same failure semantics the scripts had (set -eo pipefail).
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tools
+        run: |
+          sudo pipx install check-jsonschema
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.53.3/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Schema-check add-on files
+        run: check-jsonschema --schema-file schema/addon.schema.json addons/*.yaml
+
+      # Merge addons/*.yaml (rich, per-add-on) into dist/matrix.yaml (the flat shape the operator
+      # embeds and loads).
+      - name: Build the merged matrix
+        run: |
+          mkdir -p dist
+          {
+            echo "# GENERATED — do not edit. Source of truth: addons/*.yaml"
+            # Collapse every addon file into { addons: { <name>: [ {addonRange,k8sRange}, ... ] } }
+            yq eval-all '
+              {"addons": ([ .[] | {(.name): [ .rules[] | {"addonRange": .addonRange, "k8sRange": .k8sRange} ]} ] | add)}
+            ' addons/*.yaml
+          } > dist/matrix.yaml
+
+      - name: Sanity — matrix parses and has add-ons
+        run: |
+          count=$(yq '.addons | length' dist/matrix.yaml)
+          echo "add-ons in matrix: $count"
+          test "$count" -gt 0
+
+      # Hand the exact validated file to the publish job instead of rebuilding it there.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: matrix
+          path: dist/matrix.yaml
+          if-no-files-found: error
+
+  # On a tag, publish the OCI artifact to GHCR.
+  publish:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    env:
+      REPO: ghcr.io/miropshq/compat
+    steps:
+      - name: Install oras
+        run: |
+          curl -sLO https://github.com/oras-project/oras/releases/download/v1.2.0/oras_1.2.0_linux_amd64.tar.gz
+          sudo tar -xzf oras_1.2.0_linux_amd64.tar.gz -C /usr/local/bin oras
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: matrix
+          path: dist
+
+      - name: Login to GHCR
+        run: oras login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+
+      # Push the matrix as a single-file OCI artifact with a descriptive media type.
+      - name: Publish the OCI artifact
+        run: |
+          oras push "${REPO}:${GITHUB_REF_NAME}" \
+            --artifact-type application/vnd.mirops.compat.matrix.v1 \
+            dist/matrix.yaml:application/yaml
+          echo "published ${REPO}:${GITHUB_REF_NAME}"

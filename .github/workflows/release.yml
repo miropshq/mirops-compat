@@ -23,7 +23,7 @@ jobs:
           sudo chmod +x /usr/local/bin/yq
 
       - name: Schema-check add-on files
-        run: check-jsonschema --schema-file schema/addon.schema.json addons/*.yaml
+        run: check-jsonschema --schemafile schema/addon.schema.json addons/*.yaml
 
       # Merge addons/*.yaml (rich, per-add-on) into dist/matrix.yaml (the flat shape the operator
       # embeds and loads).

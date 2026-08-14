@@ -16,11 +16,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install tools
-        run: |
-          sudo pipx install check-jsonschema
-          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.53.3/yq_linux_amd64
-          sudo chmod +x /usr/local/bin/yq
+      # yq and pipx already ship with the ubuntu-latest runner image.
+      - name: Install check-jsonschema
+        run: pipx install check-jsonschema
 
       - name: Schema-check add-on files
         run: check-jsonschema --schemafile schema/addon.schema.json addons/*.yaml
@@ -33,8 +31,9 @@ jobs:
           {
             echo "# GENERATED — do not edit. Source of truth: addons/*.yaml"
             # Collapse every addon file into { addons: { <name>: [ {addonRange,k8sRange}, ... ] } }
+            # [.] gathers all documents into one array first, so the result is a single document.
             yq eval-all '
-              {"addons": ([ .[] | {(.name): [ .rules[] | {"addonRange": .addonRange, "k8sRange": .k8sRange} ]} ] | add)}
+              [.] | {"addons": (map({"key": .name, "value": [ .rules[] | {"addonRange": .addonRange, "k8sRange": .k8sRange} ]}) | from_entries)}
             ' addons/*.yaml
           } > dist/matrix.yaml
 
@@ -61,18 +60,20 @@ jobs:
     env:
       REPO: ghcr.io/miropshq/compat
     steps:
-      - name: Install oras
-        run: |
-          curl -sLO https://github.com/oras-project/oras/releases/download/v1.2.0/oras_1.2.0_linux_amd64.tar.gz
-          sudo tar -xzf oras_1.2.0_linux_amd64.tar.gz -C /usr/local/bin oras
+      
+      - uses: oras-project/setup-oras@v2
 
       - uses: actions/download-artifact@v4
         with:
           name: matrix
           path: dist
-
-      - name: Login to GHCR
-        run: oras login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Login to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       # Push the matrix as a single-file OCI artifact with a descriptive media type.
       - name: Publish the OCI artifact

@@ -1,16 +1,18 @@
-name: Release OCI matrix compatibility for Mirops
+name: CI - Feature / PR (validate)
 
+# Validation-only pipeline. Runs on every PR targeting main. It never pushes
+# images or artifacts — it only proves the code is sound so a green check means
+# the PR is safe to merge.
 on:
   pull_request:
-  push:
-    branches: [development]
+    branches:
+      - main
 
-# Same failure semantics the scripts had (set -eo pipefail).
-defaults:
-  run:
-    shell: bash
+permissions:
+  contents: read
 
 jobs:
+
   validate:
     runs-on: ubuntu-latest
     steps:
@@ -49,37 +51,3 @@ jobs:
           name: matrix
           path: dist/matrix.yaml
           if-no-files-found: error
-
-  # On a tag, publish the OCI artifact to GHCR.
-  publish:
-    needs: validate
-    runs-on: ubuntu-latest
-    permissions:
-      packages: write
-    env:
-      REPO: ghcr.io/miropshq/mirops-compat
-    steps:
-      
-      - uses: oras-project/setup-oras@v2
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: matrix
-          path: dist
-          
-      - name: Login to the Container registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      # Push the matrix as a single-file OCI artifact with a descriptive media type.
-      # The tag is the UTC date of the upload: vYYYY.MM.DD.
-      - name: Publish the OCI artifact
-        run: |
-          tag="v$(date -u +%Y.%m.%d)"
-          oras push "${REPO}:${tag}" \
-            --artifact-type application/vnd.mirops.compat.matrix.v1 \
-            dist/matrix.yaml:application/yaml
-          echo "published ${REPO}:${tag}"

@@ -16,20 +16,19 @@ addons/*.yaml            # one file per add-on — hand-curated, vendor-verified
 kubernetes/
   deprecated-apis.yaml   # deprecated/removed APIs — GENERATED from upstream, not hand-edited
 schema/addon.schema.json # validates every addons/*.yaml in CI
-scripts/
-  build.sh               # merges addons/*.yaml → dist/matrix.yaml (the operator's shape)
-  publish.sh             # pushes dist/matrix.yaml to GHCR as an OCI artifact
+.github/workflows/
+  release.yml            # schema-checks, merges addons/*.yaml → dist/matrix.yaml, pushes to GHCR
 dist/matrix.yaml         # generated artifact (embedded by the operator + published to OCI)
 ```
 
 ## How it's consumed (three layers, highest wins)
 
 ```
-1. ConfigMap  mirops-compatibility-matrix   → per-cluster overrides (the user's own add-ons)
-2. OCI        ghcr.io/miropshq/compat:vX     → pinned version, pulled at startup (update without
-                                                a new operator release)
-3. Embedded   internal/compat/matrix.yaml    → snapshot baked into the operator (offline fallback,
-                                                always present — air-gapped safe)
+1. ConfigMap  mirops-compatibility-matrix       → per-cluster overrides (the user's own add-ons)
+2. OCI        ghcr.io/miropshq/mirops-compat:vX → pinned version, pulled at startup (update without
+                                                   a new operator release)
+3. Embedded   internal/compat/matrix.yaml       → snapshot baked into the operator (offline fallback,
+                                                   always present — air-gapped safe)
 ```
 
 The operator tries the OCI pull, then **falls back to the embedded snapshot** on any failure, so it
@@ -38,9 +37,9 @@ always starts — even air-gapped or when GHCR is down.
 ## Release flow
 
 ```
-PR to addons/*.yaml → CI validates against schema → merge → tag vYYYY.MM.DD
-  → CI runs build.sh → dist/matrix.yaml
-  → CI runs publish.sh → oras push ghcr.io/miropshq/compat:vYYYY.MM.DD
+PR to addons/*.yaml → CI validates against schema → merge
+  → CI merges addons/*.yaml → dist/matrix.yaml
+  → CI runs oras push ghcr.io/miropshq/mirops-compat:vYYYY.MM.DD  (tag = UTC date of the upload)
   → operator bumps its embedded snapshot and/or its default ociRef
 ```
 
@@ -59,13 +58,15 @@ rules:
     bestEffort: true            # extrapolated, not vendor-confirmed — confirm before relying on it
 ```
 
-## Build & publish
+## Local checks
 
 ```sh
-make build     # addons/*.yaml → dist/matrix.yaml   (needs yq v4)
-make validate  # schema-check every addons/*.yaml
-make publish   # oras push dist/matrix.yaml → GHCR   (needs oras + a tag)
+make validate  # schema-check every addons/*.yaml   (needs check-jsonschema)
+make clean     # remove dist/
 ```
+
+Building and publishing `dist/matrix.yaml` happens only in
+[`.github/workflows/release.yml`](.github/workflows/release.yml) — there is no local publish path.
 
 ## Contributing
 

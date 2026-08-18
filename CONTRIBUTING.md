@@ -29,7 +29,7 @@ official source.**
 
 ## Releasing (maintainers)
 
-Merging to `development` is the release. CI builds `dist/matrix.yaml` and publishes the OCI artifact
+Merging to `main` is the release. CI builds `dist/matrix.yaml` and publishes the OCI artifact
 to `ghcr.io/miropshq/mirops-compat:vYYYY.MM.DD`, where the tag is the **UTC date of the upload** —
 two releases on the same day overwrite the same tag. Bump the operator's embedded snapshot / default
 `ociRef` to adopt it.

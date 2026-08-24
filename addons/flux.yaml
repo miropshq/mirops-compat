@@ -1,0 +1,8 @@
+name: flux
+displayName: Flux
+source: https://fluxcd.io/flux/installation/
+lastVerified: "2026-08"
+# Current Flux releases support the latest three upstream Kubernetes minors.
+rules:
+  - addonRange: ">=2.7.0 <2.8.0"
+    k8sRange: ">=1.33.0 <=1.35.0"

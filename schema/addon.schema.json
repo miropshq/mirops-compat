@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "mirops add-on compatibility entry",
   "type": "object",
-  "required": ["name", "source", "rules"],
+  "required": ["name", "displayName", "source", "lastVerified", "rules"],
   "additionalProperties": false,
   "properties": {
     "name": {
@@ -18,6 +18,7 @@
     },
     "lastVerified": {
       "type": "string",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$",
       "description": "YYYY-MM when the ranges were confirmed against source"
     },
     "rules": {
@@ -32,7 +33,12 @@
           "k8sRange": { "type": "string", "minLength": 1 },
           "bestEffort": {
             "type": "boolean",
-            "description": "true = extrapolated, not vendor-confirmed"
+            "description": "true = community-tested, not vendor-supported"
+          },
+          "evidence": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL documenting a reproducible community test when bestEffort is true"
           }
         }
       }

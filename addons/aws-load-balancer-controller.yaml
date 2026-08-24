@@ -1,0 +1,7 @@
+name: aws-load-balancer-controller
+displayName: AWS Load Balancer Controller
+source: https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.8/deploy/installation/
+lastVerified: "2026-08"
+rules:
+  - addonRange: ">=2.7.0"
+    k8sRange: ">=1.22.0"

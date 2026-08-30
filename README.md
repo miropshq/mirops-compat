@@ -5,7 +5,8 @@ which add-on versions run on which Kubernetes versions, community-maintained and
 Think *endoflife.date, but a cross–add-on compatibility matrix.*
 
 The mirops operator uses this to decide whether an upgrade is safe. This repo is the **source of
-truth**; the operator ships an embedded snapshot and can also pull a pinned version at runtime.
+truth**; the operator ships an embedded snapshot, and the Helm chart can pull a chosen published
+version into an override ConfigMap — so you can update the matrix without a new operator release.
 
 ---
 
@@ -23,26 +24,31 @@ scripts/                 # cross-file validation and matrix generation
 dist/matrix.yaml         # generated artifact (embedded by the operator + published to OCI)
 ```
 
-## How it's consumed (three layers, highest wins)
+## How it's consumed (two layers, override wins)
 
 ```
-1. ConfigMap  mirops-compatibility-matrix       → per-cluster overrides (the user's own add-ons)
-2. OCI        ghcr.io/miropshq/mirops-compat:vX → pinned version, pulled at startup (update without
-                                                   a new operator release)
-3. Embedded   internal/compat/matrix.yaml       → snapshot baked into the operator (offline fallback,
-                                                   always present — air-gapped safe)
+1. ConfigMap  mirops-compatibility-matrix  → the operator reads this as an override. Populate it by
+                                             pulling a published OCI version with the Helm chart
+                                             (compatMatrix.enabled=true), or ship your own add-on rules.
+2. Embedded   internal/compat/matrix.yaml  → snapshot baked into the operator — the default, always
+                                             present (offline / air-gapped safe).
 ```
 
-The operator tries the OCI pull, then **falls back to the embedded snapshot** on any failure, so it
-always starts — even air-gapped or when GHCR is down.
+The operator uses the **embedded** matrix unless the override ConfigMap is present. The **OCI artifact
+published here is the source the Helm chart pulls into that ConfigMap** — the operator itself never
+reaches a registry at runtime, so it always starts, even air-gapped or when GHCR is down.
+
+Versions are tagged by **UTC date** (`vYYYY.MM.DD`), plus a moving **`latest`** tag. Pin a date for
+reproducible upgrade verdicts in production; use `latest` to stay current in non-prod.
 
 ## Release flow
 
 ```
 PR to addons/*.yaml → CI validates against schema → merge
   → CI merges addons/*.yaml → dist/matrix.yaml
-  → CI runs oras push ghcr.io/miropshq/mirops-compat:vYYYY.MM.DD  (tag = UTC date of the upload)
-  → operator bumps its embedded snapshot and/or its default ociRef
+  → CI runs oras push ghcr.io/miropshq/mirops-compat:vYYYY.MM.DD  (tag = UTC date) + retags 'latest'
+  → the Helm chart can pull that version into the override ConfigMap; the operator re-embeds the
+    snapshot on its next release
 ```
 
 ## Add-on file format (`addons/istio.yaml`)

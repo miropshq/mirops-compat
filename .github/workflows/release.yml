@@ -81,4 +81,7 @@ jobs:
           oras push "${REPO}:${tag}" \
             --artifact-type application/vnd.mirops.compat.matrix.v1 \
             dist/matrix.yaml:application/yaml
-          echo "published ${REPO}:${tag}"
+          # Also move the 'latest' tag to this build, so consumers can pull the newest matrix
+          # without knowing the date (pin the date tag for reproducible builds).
+          oras tag "${REPO}:${tag}" latest
+          echo "published ${REPO}:${tag} (also tagged latest)"

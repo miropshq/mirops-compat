@@ -41,6 +41,33 @@ reaches a registry at runtime, so it always starts, even air-gapped or when GHCR
 Versions are tagged by **UTC date** (`vYYYY.MM.DD`), plus a moving **`latest`** tag. Pin a date for
 reproducible upgrade verdicts in production; use `latest` to stay current in non-prod.
 
+## Inspecting what a published version covers
+
+Compatibility isn't defined per OCI tag — it's defined per add-on in [`addons/*.yaml`](addons/)
+(the `rules:` mapping `addonRange` → `k8sRange`). Each published tag is just a **frozen snapshot** of
+all those rules at that date, merged into a single `matrix.yaml`. To see exactly what a tag covers,
+pull it and read the file — there is no separate index:
+
+```sh
+# a pinned date
+oras pull ghcr.io/miropshq/mirops-compat:v2026.08.30 --output ./matrix
+cat ./matrix/matrix.yaml     # every add-on and its addonRange → k8sRange rules
+
+# or the moving 'latest'
+oras pull ghcr.io/miropshq/mirops-compat:latest --output ./matrix
+cat ./matrix/matrix.yaml
+```
+
+If it's already running in a cluster, read the same content from the override ConfigMap the operator
+consumes (when `compatMatrix.enabled=true` populated it):
+
+```sh
+kubectl get configmap mirops-compatibility-matrix -n mirops -o jsonpath='{.data.matrix\.yaml}'
+```
+
+When that ConfigMap isn't present the operator uses its **embedded** snapshot (baked into the image
+at build), which tracks the operator's own release rather than a date tag.
+
 ## Release flow
 
 ```

@@ -51,11 +51,11 @@ pull it and read the file — there is no separate index:
 ```sh
 # a pinned date
 oras pull ghcr.io/miropshq/mirops-compat:v2026.08.30 --output ./matrix
-cat ./matrix/matrix.yaml     # every add-on and its addonRange → k8sRange rules
+cat ./matrix/dist/matrix.yaml     # every add-on and its addonRange → k8sRange rules
 
 # or the moving 'latest'
 oras pull ghcr.io/miropshq/mirops-compat:latest --output ./matrix
-cat ./matrix/matrix.yaml
+cat ./matrix/dist/matrix.yaml
 ```
 
 If it's already running in a cluster, read the same content from the override ConfigMap the operator

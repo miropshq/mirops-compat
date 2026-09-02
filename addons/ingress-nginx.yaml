@@ -4,6 +4,10 @@ source: https://github.com/kubernetes/ingress-nginx
 lastVerified: "2026-06"
 # Legacy controller; use Gateway API for new deployments. These rows reflect the project's E2E table.
 rules:
+  - addonRange: ">=1.11.0 <1.12.0"
+    k8sRange: ">=1.26.0 <=1.30.0"
+  - addonRange: ">=1.12.0 <1.13.0"
+    k8sRange: ">=1.28.0 <=1.32.0"
   - addonRange: ">=1.13.5 <1.14.0"
     k8sRange: ">=1.29.0 <=1.33.0"
   - addonRange: ">=1.14.0"

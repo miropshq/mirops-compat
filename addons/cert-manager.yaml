@@ -8,6 +8,10 @@ rules:
     k8sRange: ">=1.35.0 <1.36.0"
     bestEffort: true
     evidence: https://github.com/kubernetes-sigs/kubespray/issues/13176
+  - addonRange: ">=1.16.0 <1.17.0"
+    k8sRange: ">=1.25.0 <=1.32.0"
+  - addonRange: ">=1.17.0 <1.19.0"
+    k8sRange: ">=1.29.0 <=1.33.0"
   - addonRange: ">=1.19.0 <1.20.0"
     k8sRange: ">=1.31.0 <=1.35.0"
   - addonRange: ">=1.20.0 <1.21.0"

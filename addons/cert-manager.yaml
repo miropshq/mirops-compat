@@ -1,13 +1,11 @@
 name: cert-manager
 displayName: cert-manager
 source: https://cert-manager.io/docs/releases/
-lastVerified: "2026-06"
+lastVerified: "2026-09"
 # Rows follow the official supported-release and historical compatibility tables.
 rules:
-  - addonRange: ">=1.15.3 <1.16.0"
-    k8sRange: ">=1.35.0 <1.36.0"
-    bestEffort: true
-    evidence: https://github.com/kubernetes-sigs/kubespray/issues/13176
+  - addonRange: ">=1.15.0 <1.16.0"
+    k8sRange: ">=1.25.0 <=1.32.0"
   - addonRange: ">=1.16.0 <1.17.0"
     k8sRange: ">=1.25.0 <=1.32.0"
   - addonRange: ">=1.17.0 <1.19.0"
@@ -15,6 +13,6 @@ rules:
   - addonRange: ">=1.19.0 <1.20.0"
     k8sRange: ">=1.31.0 <=1.35.0"
   - addonRange: ">=1.20.0 <1.21.0"
-    k8sRange: ">=1.32.0 <=1.36.0"
+    k8sRange: ">=1.32.0 <=1.35.0"
   - addonRange: ">=1.21.0"
     k8sRange: ">=1.33.0 <=1.36.0"

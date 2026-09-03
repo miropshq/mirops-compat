@@ -3,7 +3,7 @@ name: Release OCI matrix compatibility for Mirops
 on:
   pull_request:
   push:
-    branches: [development]
+    branches: [main]
 
 # Same failure semantics the scripts had (set -eo pipefail).
 defaults:
@@ -49,9 +49,10 @@ jobs:
           path: dist/matrix.yaml
           if-no-files-found: error
 
-  # On a tag, publish the OCI artifact to GHCR.
+  # On push to main, publish the OCI artifact to GHCR. PRs only run the validate job above.
   publish:
     needs: validate
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       packages: write

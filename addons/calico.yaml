@@ -2,19 +2,11 @@ name: calico
 displayName: Calico
 source: https://docs.tigera.io/calico/latest/getting-started/kubernetes/requirements
 lastVerified: "2026-06"
-# 3.32 verified (tests 1.34–1.36); older rows are best-effort (each release tests ~3 minors).
+# 3.32 is tested against Kubernetes 1.34–1.36 by the official requirements page.
 rules:
-  - addonRange: ">=3.28.0 <3.29.0"
-    k8sRange: ">=1.27.0 <=1.30.0"
+  - addonRange: ">=3.31.5 <3.32.0"
+    k8sRange: ">=1.35.0 <1.36.0"
     bestEffort: true
-  - addonRange: ">=3.29.0 <3.30.0"
-    k8sRange: ">=1.29.0 <=1.32.0"
-    bestEffort: true
-  - addonRange: ">=3.30.0 <3.31.0"
-    k8sRange: ">=1.30.0 <=1.33.0"
-    bestEffort: true
-  - addonRange: ">=3.31.0 <3.32.0"
-    k8sRange: ">=1.33.0 <=1.35.0"
-    bestEffort: true
+    evidence: https://github.com/kubernetes-sigs/kubespray/issues/13176
   - addonRange: ">=3.32.0"
     k8sRange: ">=1.34.0 <=1.36.0"

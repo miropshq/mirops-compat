@@ -1,3 +1,40 @@
-# Generated artifact — built by scripts/build.sh, published from CI. Not committed.
+# Generated compatibility matrix. It is rebuilt by CI and local `make build`.
 /dist/
-Makefile
+
+# Python bytecode and local test/type-check caches.
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local Python environments.
+.venv/
+venv/
+env/
+ENV/
+
+# Local configuration and secrets. Keep safe templates such as `.env.example` trackable.
+.env
+.env.*
+!.env.example
+!.env.template
+
+# Editor and operating-system metadata.
+.idea/
+.vscode/
+.fleet/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Temporary files, logs, and local reports.
+*.log
+*.tmp
+*.temp
+*.swp
+*.swo
+coverage.xml

@@ -1,0 +1,7 @@
+name: longhorn
+displayName: Longhorn
+source: https://longhorn.io/docs/latest/deploy/install/
+lastVerified: "2026-08"
+rules:
+  - addonRange: ">=1.7.0"
+    k8sRange: ">=1.25.0"

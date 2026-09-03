@@ -16,9 +16,9 @@ official source.**
 4. Run locally:
    ```sh
    make validate   # schema-check
-   make build      # produces dist/matrix.yaml
    ```
-5. Open a PR. CI validates the schema and the build. A maintainer confirms the `source`.
+5. Open a PR. CI validates the schema and builds the merged matrix. A maintainer confirms the
+   `source`.
 
 ## Rules of thumb
 
@@ -29,5 +29,7 @@ official source.**
 
 ## Releasing (maintainers)
 
-Tag `vYYYY.MM.DD` on `main`. CI builds `dist/matrix.yaml` and publishes the OCI artifact to
-`ghcr.io/miropshq/compat:<tag>`. Bump the operator's embedded snapshot / default `ociRef` to adopt it.
+Merging to `main` is the release. CI builds `dist/matrix.yaml` and publishes the OCI artifact
+to `ghcr.io/miropshq/mirops-compat:vYYYY.MM.DD`, where the tag is the **UTC date of the upload** —
+two releases on the same day overwrite the same tag. Bump the operator's embedded snapshot / default
+`ociRef` to adopt it.

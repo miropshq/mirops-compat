@@ -1,13 +1,10 @@
 name: ingress-nginx
 displayName: ingress-nginx
 source: https://github.com/kubernetes/ingress-nginx
-lastVerified: "2026-06"
-# NOTE: the project was archived in Mar 2026 — migrate to the Gateway API. Kept for existing users.
+lastVerified: "2026-09"
+# Legacy controller (in retirement, best-effort until Mar 2026); use Gateway API for new deployments.
+# Rows follow the project's official supported-versions table; no release supports Kubernetes >=1.36.
 rules:
-  - addonRange: ">=1.9.0 <1.10.0"
-    k8sRange: ">=1.25.0 <=1.29.0"
-  - addonRange: ">=1.10.0 <1.11.0"
-    k8sRange: ">=1.26.0 <=1.30.0"
   - addonRange: ">=1.11.0 <1.12.0"
     k8sRange: ">=1.26.0 <=1.30.0"
   - addonRange: ">=1.12.0 <1.13.0"

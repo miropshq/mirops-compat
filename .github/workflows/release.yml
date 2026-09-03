@@ -3,7 +3,7 @@ name: Release OCI matrix compatibility for Mirops
 on:
   pull_request:
   push:
-    branches: [development]
+    branches: [main]
 
 # Same failure semantics the scripts had (set -eo pipefail).
 defaults:
@@ -20,22 +20,21 @@ jobs:
       - name: Install check-jsonschema
         run: pipx install check-jsonschema
 
+      - name: Install Python script dependencies
+        run: python -m pip install PyYAML
+
       - name: Schema-check add-on files
         run: check-jsonschema --schemafile schema/addon.schema.json addons/*.yaml
+
+      - name: Cross-file catalog validation
+        run: python scripts/validate_addons.py
 
       # Merge addons/*.yaml (rich, per-add-on) into dist/matrix.yaml (the flat shape the operator
       # embeds and loads).
       - name: Build the merged matrix
         run: |
           mkdir -p dist
-          {
-            echo "# GENERATED — do not edit. Source of truth: addons/*.yaml"
-            # Collapse every addon file into { addons: { <name>: [ {addonRange,k8sRange}, ... ] } }
-            # [.] gathers all documents into one array first, so the result is a single document.
-            yq eval-all '
-              [.] | {"addons": (map({"key": .name, "value": [ .rules[] | {"addonRange": .addonRange, "k8sRange": .k8sRange} ]}) | from_entries)}
-            ' addons/*.yaml
-          } > dist/matrix.yaml
+          python scripts/build_matrix.py
 
       - name: Sanity — matrix parses and has add-ons
         run: |
@@ -50,15 +49,15 @@ jobs:
           path: dist/matrix.yaml
           if-no-files-found: error
 
-  # On a tag, publish the OCI artifact to GHCR.
+  # On push to main, publish the OCI artifact to GHCR. PRs only run the validate job above.
   publish:
-    if: startsWith(github.ref, 'refs/tags/v')
     needs: validate
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       packages: write
     env:
-      REPO: ghcr.io/miropshq/compat
+      REPO: ghcr.io/miropshq/mirops-compat
     steps:
       
       - uses: oras-project/setup-oras@v2
@@ -76,9 +75,14 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       # Push the matrix as a single-file OCI artifact with a descriptive media type.
+      # The tag is the UTC date of the upload: vYYYY.MM.DD.
       - name: Publish the OCI artifact
         run: |
-          oras push "${REPO}:${GITHUB_REF_NAME}" \
+          tag="v$(date -u +%Y.%m.%d)"
+          oras push "${REPO}:${tag}" \
             --artifact-type application/vnd.mirops.compat.matrix.v1 \
             dist/matrix.yaml:application/yaml
-          echo "published ${REPO}:${GITHUB_REF_NAME}"
+          # Also move the 'latest' tag to this build, so consumers can pull the newest matrix
+          # without knowing the date (pin the date tag for reproducible builds).
+          oras tag "${REPO}:${tag}" latest
+          echo "published ${REPO}:${tag} (also tagged latest)"

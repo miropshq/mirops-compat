@@ -1,0 +1,7 @@
+name: gatekeeper
+displayName: Gatekeeper
+source: https://open-policy-agent.github.io/gatekeeper/website/docs/install/
+lastVerified: "2026-08"
+rules:
+  - addonRange: ">=3.18.0"
+    k8sRange: ">=1.16.0"

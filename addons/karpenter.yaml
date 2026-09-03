@@ -1,0 +1,17 @@
+name: karpenter
+displayName: Karpenter
+source: https://karpenter.sh/v1.0/upgrading/compatibility/
+lastVerified: "2026-08"
+rules:
+  - addonRange: ">=0.25.0 <0.28.0"
+    k8sRange: ">=1.25.0 <1.26.0"
+  - addonRange: ">=0.28.0 <0.31.0"
+    k8sRange: ">=1.26.0 <1.28.0"
+  - addonRange: ">=0.31.0 <0.34.0"
+    k8sRange: ">=1.28.0 <1.29.0"
+  - addonRange: ">=0.34.0 <0.37.0"
+    k8sRange: ">=1.29.0 <1.30.0"
+  - addonRange: ">=0.37.0 <1.0.5"
+    k8sRange: ">=1.30.0 <1.31.0"
+  - addonRange: ">=1.0.5"
+    k8sRange: ">=1.31.0 <1.32.0"

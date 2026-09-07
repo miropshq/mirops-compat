@@ -58,6 +58,7 @@ jobs:
       packages: write
     env:
       REPO: ghcr.io/miropshq/mirops-compat
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     steps:
       
       - uses: oras-project/setup-oras@v2
@@ -86,3 +87,23 @@ jobs:
           # without knowing the date (pin the date tag for reproducible builds).
           oras tag "${REPO}:${tag}" latest
           echo "published ${REPO}:${tag} (also tagged latest)"
+
+      - name: Notify Slack
+        if: ${{ always() && env.SLACK_WEBHOOK_URL != '' }}
+        uses: slackapi/slack-github-action@v4.0.0
+        with:
+          webhook: ${{ env.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": "${{ github.workflow }} ${{ job.status }} for ${{ github.repository }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*${{ github.workflow }}* — *${{ job.status }}*\n`${{ github.repository }}` · `${{ github.ref_name }}` · `${{ github.sha }}`\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View workflow run>"
+                  }
+                }
+              ]
+            }

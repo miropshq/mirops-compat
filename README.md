@@ -1,16 +1,21 @@
-# mirops-compat
+# Mirops compatibility catalog
 
-The **Kubernetes add-on compatibility library** for [mirops](https://github.com/miropshq/mirops) —
-which add-on versions run on which Kubernetes versions, community-maintained and vendor-verified.
-Think *endoflife.date, but a cross–add-on compatibility matrix.*
+This repository maintains source-backed Kubernetes add-on compatibility rules consumed by Mirops upgrade analyses. Each rule maps a conservative add-on version range to Kubernetes versions supported by cited vendor documentation.
 
-The mirops operator uses this to decide whether an upgrade is safe. This repo is the **source of
-truth**; the operator ships an embedded snapshot, and the Helm chart can pull a chosen published
-version into an override ConfigMap — so you can update the matrix without a new operator release.
+```mermaid
+flowchart LR
+  D[Vendor documentation] --> A[Reviewed add-on rules]
+  A --> V[Schema and consistency validation]
+  V --> G[Generated matrix]
+  G --> O[Versioned OCI artifact]
+  O -->|optional pinned pull| C[Helm ConfigMap override]
+  C --> M[Mirops operator]
+  G -->|embedded snapshot| M
+  M --> R[Compatibility findings in report]
+```
 
----
+The embedded snapshot keeps the operator deterministic and air-gap capable. Administrators can use a dated OCI snapshot through the Helm chart when they need to update compatibility data without a new operator image.
 
-## Layout
 
 ```
 addons/*.yaml            # one file per add-on — hand-curated, vendor-verified (edit by PR)

@@ -1,86 +1,53 @@
-# mirops-compat
+# Mirops compatibility catalog
 
-The **Kubernetes add-on compatibility library** for [mirops](https://github.com/miropshq/mirops) —
-which add-on versions run on which Kubernetes versions, community-maintained and vendor-verified.
-Think *endoflife.date, but a cross–add-on compatibility matrix.*
+The source-of-truth catalog for Kubernetes add-on compatibility in Mirops. Each hand-reviewed rule maps an add-on version range to the Kubernetes versions it supports.
 
-The mirops operator uses this to decide whether an upgrade is safe. This repo is the **source of
-truth**; the operator ships an embedded snapshot and can also pull a pinned version at runtime.
-
----
-
-## Layout
-
-```
-addons/*.yaml            # one file per add-on — hand-curated, vendor-verified (edit by PR)
-kubernetes/
-  deprecated-apis.yaml   # deprecated/removed APIs — GENERATED from upstream, not hand-edited
-schema/addon.schema.json # validates every addons/*.yaml in CI
-.github/workflows/       # validation and OCI release workflows
-scripts/                 # cross-file validation and matrix generation
-.github/workflows/
-  release.yml            # schema-checks, merges addons/*.yaml → dist/matrix.yaml, pushes to GHCR
-dist/matrix.yaml         # generated artifact (embedded by the operator + published to OCI)
+```mermaid
+flowchart LR
+  A[Official vendor documentation] --> R[addons/*.yaml]
+  R --> V[Schema and integrity checks]
+  V --> M[dist/matrix.yaml]
+  M --> O[Mirops operator]
 ```
 
-## How it's consumed (three layers, highest wins)
+## How it is used
 
-```
-1. ConfigMap  mirops-compatibility-matrix       → per-cluster overrides (the user's own add-ons)
-2. OCI        ghcr.io/miropshq/mirops-compat:vX → pinned version, pulled at startup (update without
-                                                   a new operator release)
-3. Embedded   internal/compat/matrix.yaml       → snapshot baked into the operator (offline fallback,
-                                                   always present — air-gapped safe)
-```
+The operator can use an embedded snapshot, a cluster ConfigMap override, or a pinned OCI artifact. A pinned artifact makes a result reproducible; the embedded snapshot keeps the operator useful in air-gapped environments.
 
-The operator tries the OCI pull, then **falls back to the embedded snapshot** on any failure, so it
-always starts — even air-gapped or when GHCR is down.
+## Repository layout
 
-## Release flow
+| Path | Responsibility |
+| --- | --- |
+| `addons/` | One reviewed YAML file per add-on. |
+| `schema/addon.schema.json` | Per-file validation contract. |
+| `scripts/` | Deterministic validation and matrix generation. |
+| `kubernetes/deprecated-apis.yaml` | Generated Kubernetes deprecation data; do not edit manually. |
+| `dist/` | Generated output; do not hand-edit or commit it. |
 
-```
-PR to addons/*.yaml → CI validates against schema → merge
-  → CI merges addons/*.yaml → dist/matrix.yaml
-  → CI runs oras push ghcr.io/miropshq/mirops-compat:vYYYY.MM.DD  (tag = UTC date of the upload)
-  → operator bumps its embedded snapshot and/or its default ociRef
-```
-
-## Add-on file format (`addons/istio.yaml`)
+## Add or update a rule
 
 ```yaml
-name: istio                 # kebab-case id (matches the add-on the collector detects)
+name: istio
 displayName: Istio
-source: https://istio.io/latest/docs/releases/supported-releases/   # required — the vendor table
-lastVerified: "2026-06"     # when the ranges were confirmed against `source`
+source: https://istio.io/latest/docs/releases/supported-releases/
+lastVerified: "2026-10"
 rules:
-  - addonRange: ">=1.30.0"      # semver range (blang/semver); an add-on version satisfying this…
-    k8sRange: ">=1.32.0 <=1.36.0" # …is supported on these Kubernetes versions
-  - addonRange: ">=1.26.0 <1.27.0"
-    k8sRange: ">=1.29.0 <=1.33.0"
-    bestEffort: true            # community-tested, not vendor-supported
-    evidence: https://example.org/test-report
+  - addonRange: ">=1.30.0"
+    k8sRange: ">=1.32.0 <=1.36.0"
 ```
 
-## Local checks
+Use a lowercase kebab-case filename and ID, cite the official source, and keep ranges conservative. Community-tested rules require `bestEffort: true` plus evidence; do not infer a support boundary that the source does not establish.
+
+## Validate locally
 
 ```sh
-make validate  # schema-check and enforce catalog-wide invariants
-make build     # generate dist/matrix.yaml
-make clean     # remove generated matrix
+make validate
+make build
 ```
 
-`make validate` requires Python with PyYAML and the `check-jsonschema` command. The catalog-wide
-checks enforce filename/name consistency, unique IDs, verification-date format, required metadata,
-nonempty rules, and non-overlapping add-on ranges.
+`make validate` checks schema and catalog-wide invariants. `make build` produces the generated matrix for inspection; publishing is handled by CI.
 
-The catalog covers widely deployed upstream, CNCF, Kubernetes SIG, and major cloud-provider
-add-ons. Compatibility rows are based on official project documentation; unverifiable extrapolated
-rows should not be added.
+## Contribute with confidence
 
-Building and publishing `dist/matrix.yaml` happens only in
-[`.github/workflows/release.yml`](.github/workflows/release.yml) — there is no local publish path.
+Compatibility claims affect real upgrade decisions. Keep pull requests focused, verify sources, and review generated output before submission. Read [CONTRIBUTING.md](CONTRIBUTING.md), [AGENTS.md](AGENTS.md), and the Apache-2.0 [LICENSE](LICENSE).
 
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md). Every rule must trace to an official `source`; unverified
-rules without vendor confirmation must be marked `bestEffort: true` and include community evidence. License: Apache-2.0.
